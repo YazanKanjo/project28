@@ -1,57 +1,44 @@
-#include <xc.h>
-#include <stdint.h>
-#include "tmr0.h"
+#include <xc.h>                    // Include the XC header file
+#include <stdint.h>                // Include standard integer definitions
+#include "tmr0.h"                  // Include the header file for TMR0
 
-const uint8_t tmr0_mask = 0xFF;
+const uint8_t tmr0_mask = 0xFF;    // Define a constant mask value for TMR0
 
 void TMR0_Initialize(void) {
-    // Set TMR0 to the options selected in the User Interface
+    OPTION_REGbits.T0CS = 0;       // Configure TMR0 for Timer mode
+    OPTION_REGbits.T0SE = 0;       // Increment TMR0 on low-to-high transition
+    OPTION_REGbits.PSA = 0;        // Enable TMR0 prescaler
+    OPTION_REGbits.PS = 0x07;      // Set TMR0 prescaler to 1:256
 
-    // T0PS 1:256; T0SE Increment_hi_lo; T0CS FOSC/4; PSA assigned;
-    OPTION_REGbits.T0CS = 0;   // Timer0 clock source is instruction cycle clock (FOSC/4)
-    OPTION_REGbits.T0SE = 0;   // Increment on low-to-high transition on T0CKI pin
-    OPTION_REGbits.PSA = 0;    // Prescaler is assigned to the Timer0 module
-    OPTION_REGbits.PS = 0x07;  // Prescaler rate is 1:256
-
-    // Calculating TMR0 reload value for 2ms delay
+    // Load TMR0 with a calculated value based on system frequency
     TMR0 = (uint8_t)(tmr0_mask & (256 - (((2 * _XTAL_FREQ) / (256 * 4)) / 500)));
 
-    // Clear Interrupt flag before enabling the interrupt
-    INTCONbits.TMR0IF = 0;
-
-    // Enable Timer0 interrupt
-    INTCONbits.TMR0IE = 1;
+    INTCONbits.TMR0IF = 0;         // Clear TMR0 interrupt flag
+    INTCONbits.TMR0IE = 1;         // Enable TMR0 interrupt
 }
 
 void TMR0_StartTimer(void) {
-    // Start the Timer0 by enabling the interrupt
-    INTCONbits.TMR0IE = 1;
+    INTCONbits.TMR0IE = 1;         // Enable TMR0 interrupt
 }
 
 void TMR0_StopTimer(void) {
-    // Stop the Timer0 by disabling the interrupt
-    INTCONbits.TMR0IE = 0;
+    INTCONbits.TMR0IE = 0;         // Disable TMR0 interrupt
 }
 
 void TMR0_ISR(void) {
-    static volatile uint16_t CountCallBack = 0;
+    static volatile uint16_t CountCallBack = 0;  // Static variable to count callbacks
 
-    // Disable Timer0 interrupt
-    INTCONbits.TMR0IE = 0;
-    // Clear the Timer0 interrupt flag
-    INTCONbits.TMR0IF = 0;
+    INTCONbits.TMR0IE = 0;         // Disable TMR0 interrupt
+    INTCONbits.TMR0IF = 0;         // Clear TMR0 interrupt flag
 
-    // Reload Timer0 for the next cycle
+    // Reload TMR0 with a calculated value based on system frequency
     TMR0 = (uint8_t)(tmr0_mask & (256 - (((2 * _XTAL_FREQ) / (256 * 4)) / 500)));
 
+    // Increment callback counter and check if it reaches the defined factor
     if (++CountCallBack >= TMR0_INTERRUPT_TICKER_FACTOR) {
-        // Call the ticker function
-        timer_isr();
-
-        // Reset the ticker counter
-        CountCallBack = 0;
+        timer_isr();               // Call user-defined timer ISR function
+        CountCallBack = 0;         // Reset callback counter
     }
 
-    // Enable Timer0 interrupt
-    INTCONbits.TMR0IE = 1;
+    INTCONbits.TMR0IE = 1;         // Re-enable TMR0 interrupt
 }
