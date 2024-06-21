@@ -43,18 +43,18 @@ void lcd_com(unsigned char a)
 	next:
 	RW=0;					
 	temp=a;					
-	temp&=0xf0;				// Mask Lower 4 Bits
-	LCDPORT&=0x0f;			// Make No Affect on 0ther Port Pins
-	LCDPORT|=temp;			// Send Higher Nibble to LCDPORT
+	temp&=0xf0;
+	LCDPORT&=0x0f;
+	LCDPORT|=temp;
 	E=1;
-	delay(lcd_delay);		//Send Enable Signal to LCD
+	delay(lcd_delay);
 	E=0;				
-	temp=a<<4;				//Left Shift Byte Four Times
-	temp&=0xf0;				// Mask Higher 4 Bits
-	LCDPORT&=0x0f;         	// Make No Affect on 0ther Port Pins
-	LCDPORT|=temp;			// Send Lower Nibble to LCDPORT
+	temp=a<<4;
+	temp&=0xf0;
+	LCDPORT&=0x0f;
+	LCDPORT|=temp;
 	E=1;
-	delay(lcd_delay);		// Send Enable Signal to LCD
+	delay(lcd_delay);
 	E=0;
 }
 
@@ -67,22 +67,22 @@ void lcd_data(unsigned char a)
 void lcd_init(void)
 {
 	delay(lcd_delay);
-	lcd_init_write(0x30);   //Special Sequence:Write Function Set.
+	lcd_init_write(0x30);
 	delay(lcd_delay);
-	lcd_init_write(0x30);	//Special Sequence:Write Function Set.
+	lcd_init_write(0x30);
 	delay(lcd_delay);
-	lcd_init_write(0x30);	//Special Sequence:Write Function Set.
+	lcd_init_write(0x30);
 	delay(lcd_delay);
-	lcd_init_write(0x20);   // 0x20 for 4-bit
+	lcd_init_write(0x20);
 	delay(lcd_delay);
 	lcd_com(0xC);
 	//lcd_com(0x28);         //Display Off, Cursor Off, Blink Off
 	delay(lcd_delay);
-	lcd_com(4);			   // Clear Screen & Returns the Cursor Home
+	lcd_com(4);
 	delay(lcd_delay);
 	lcd_com(0x85);       
 	delay(lcd_delay);       
-	lcd_com(6);           //Inc cursor to the right when writing and dont shift screen
+	lcd_com(6);
 	delay(lcd_delay);
 	lcd_com(1);
 	delay(lcd_delay);
@@ -120,23 +120,22 @@ void LCD_ScrollMessage(char *msg_ptr)
 {
   unsigned char i,j;
 
-  for(i=0;msg_ptr[i];i++)        //Loop to display the string complete
-    {                            //each time 16 chars are displayed and
-                                 //pointer is incremented to point to next char
+  for(i=0;msg_ptr[i];i++)
+    {
 
-      lcd_com(LineOne);                   //Move the Cursor to first line
+      lcd_com(LineOne);
 
-    for(j=0;j<LCDMaxChars && msg_ptr[i+j];j++)//loop to Display first 16 Chars
+    for(j=0;j<LCDMaxChars && msg_ptr[i+j];j++)
 	  lcd_data(msg_ptr[i+j]);
-	  delay(1200);                 //or till Null char
+	  delay(1200);
 
-	for(j=j; j<LCDMaxChars; j++)               //If the chars are below 16
-      lcd_data(BlankSpace);              //then display blank spaces
+	for(j=j; j<LCDMaxChars; j++)
+      lcd_data(BlankSpace);
       delay(1200);
     }
 }
 
-void lcd_print_number(unsigned int i)     //Function to send int on LCD
+void lcd_print_number(unsigned int i)
 {   int p;
 int k=0;
 while(i>0)
